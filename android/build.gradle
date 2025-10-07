@@ -1,14 +1,27 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "28.0.3"
+    // Give the library a namespace (required on AGP 8+)
+    namespace "com.stumblor.soundlevelmonitor"
+
+    // Use the app's values if they're defined; otherwise fall back to modern defaults
+    compileSdkVersion rootProject.ext.has('compileSdkVersion') ? rootProject.ext.compileSdkVersion : 34
 
     defaultConfig {
-        minSdkVersion 16
-        targetSdkVersion 28
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion rootProject.ext.has('minSdkVersion') ? rootProject.ext.minSdkVersion : 23
+        targetSdkVersion rootProject.ext.has('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 34
+
+        // versionCode/versionName are ignored for libraries, so omit them
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    // Don't pin buildToolsVersion; AGP picks the right one
+
+    // Enable Java 17 (fits RN 0.81 / AGP 8). If your project uses 11, change both to VERSION_11.
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
     }
 
     buildTypes {
@@ -18,7 +31,18 @@ android {
     }
 }
 
+repositories {
+    google()
+    mavenCentral()
+}
+
 dependencies {
-    implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.facebook.react:react-native:+'
+    // Remove old jars bucket—there shouldn't be any jar libs in this module
+    // implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // Use the modern React Android artifact instead of the old react-native maven dep
+    implementation("com.facebook.react:react-android")
+
+    // Desugaring for newer Java APIs on older Android API levels
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }
